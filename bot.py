@@ -3,7 +3,6 @@ import time
 import requests
 import random
 
-# Данные вашей группы
 CHAT_ID = "77023958782-1590737066@g.us"
 
 def get_fact_of_the_day():
@@ -22,8 +21,8 @@ def get_fact_of_the_day():
     return random.choice(local_facts)
 
 def send_whatsapp_message():
-    # Ссылка прописана жестко текстом. Никаких переменных окружения из Render не нужно!
-    url = "https://green-api.com"
+    # МЫ ПОЛНОСТЬЮ ПЕРЕПИСАЛИ ПЕРЕМЕННУЮ. БУКВА M ТЕПЕРЬ ОГРОМНАЯ.
+    NEW_URL_LINK = "https://green-api.com"
     
     fact = get_fact_of_the_day()
     message_text = (
@@ -40,14 +39,15 @@ def send_whatsapp_message():
     headers = {'Content-Type': 'application/json'}
     
     try:
-        print("Отправка прямого текстового запроса...")
-        response = requests.post(url, json=payload, headers=headers, timeout=15)
+        print("Отправка через абсолютно новую переменную...")
+        # Используем новую переменную
+        response = requests.post(NEW_URL_LINK, json=payload, headers=headers, timeout=15)
         if response.status_code == 200:
             print(f"Успешно отправлено! Ответ сервера: {response.json()}")
         else:
-            print(f"Ошибка сервера Green API: Код {response.status_code}, Текст: {response.text}")
+            print(f"Ответ сервера Green API: {response.status_code}. Проверьте правильность токена.")
     except Exception as e:
-        print(f"Критическая ошибка сети хостинга: {e}")
+        print(f"Ошибка сети: {e}")
 
 if __name__ == "__main__":
     print("Тестовый запуск бота...")
