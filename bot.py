@@ -2,14 +2,13 @@ import os
 import time
 import requests
 
-# 1. Настройки авторизации Green API
-# В облаке мы будем брать эти данные из переменных окружения (безопасный способ)
-ID_INSTANCE = os.getenv("7107646143")#, "ВАШ_ID_ЕСЛИ_ТЕСТИРУЕТЕ_ЛОКАЛЬНО"
-API_TOKEN_INSTANCE = os.getenv("7b6363cae6d644afafaddef92bdb3f0512915c22d5cf425dba")#, "ВАШ_ТОКЕН_ЕСЛИ_ТЕСТИРУЕТЕ_ЛОКАЛЬНО")
-CHAT_ID = os.getenv("77023958782-1590737066@g.us")#, "ID_ВАШЕЙ_ГРУППЫ@g.us")
+# 1. Настройки авторизации Green API из переменных окружения
+ID_INSTANCE = os.getenv("GREEN_API_ID")
+API_TOKEN_INSTANCE = os.getenv("GREEN_API_TOKEN")
+CHAT_ID = os.getenv("GROUP_CHAT_ID")
 
-# Время отправки (по часовому поясу сервера, обычно это UTC)
-SEND_HOUR = 5  # Например, 5:00 UTC — это 8:00 по Москве / 10:00 по Алматы
+# Время отправки (4:00 UTC — это 09:00 утра по времени Алматы)
+SEND_HOUR = 4
 SEND_MINUTE = 0
 
 def get_fact_of_the_day():
@@ -50,20 +49,15 @@ def send_whatsapp_message():
         print(f"Не удалось отправить запрос: {e}")
 
 if __name__ == "__main__":
-    print("Бот успешно запущен в облаке и вошел в бесконечный цикл ожидания...")
-    
- """while True:
-        # Получаем текущее время сервера
-        current_time = time.gmtime() 
-        
-        if current_time.tm_hour == SEND_HOUR and current_time.tm_min == SEND_MINUTE:
-            send_whatsapp_message()
-            # Засыпаем на 65 секунд, чтобы исключить повторную отправку в эту же минуту
-            time.sleep(65)
-        
-        # Проверяем время каждые 30 секунд
-        time.sleep(30)"""
-if __name__ == "__main__":
     print("Тестовый запуск бота...")
     send_whatsapp_message()
 
+    # Основной цикл закомментирован для проверки:
+    # while True:
+    #     current_time = time.gmtime() 
+    #     
+    #     if current_time.tm_hour == SEND_HOUR and current_time.tm_min == SEND_MINUTE:
+    #         send_whatsapp_message()
+    #         time.sleep(65)
+    #     
+    #     time.sleep(30)
