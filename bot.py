@@ -109,7 +109,7 @@ if __name__ == "__main__":
         now = datetime.now(ALMATY_TZ)
         today = now.date()
         
-        print(f"💓 Бот жив: {now}")
+        print(f"💓 Бот жив: {datetime.now()}")
 
         # новое время каждый день
         if last_sent_date != today:
