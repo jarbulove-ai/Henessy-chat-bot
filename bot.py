@@ -5,9 +5,9 @@ import random
 from datetime import datetime, timedelta, timezone
 
 # ====== ENV ======
-GREEN_API_ID = os.getenv("7107646143")
-GREEN_API_TOKEN = os.getenv("7b6363cae6d644afafaddef92bdb3f0512915c22d5cf425dba")
-CHAT_ID = os.getenv("77023958782-1590737066@g.us")
+GREEN_API_ID = os.getenv("GREEN_API_ID")
+GREEN_API_TOKEN = os.getenv("GREEN_API_TOKEN")
+CHAT_ID = os.getenv("GROUP_CHAT_ID")
 
 BASE_URL = f"https://api.green-api.com/waInstance{GREEN_API_ID}/sendMessage/{GREEN_API_TOKEN}"
 
