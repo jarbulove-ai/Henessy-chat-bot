@@ -124,10 +124,10 @@ while True:
     today = now.date()
 
     if now.minute in (0, 30) and now.second < 20:
-    print(
-        f"💓 BOT ALIVE | {now.strftime('%Y-%m-%d %H:%M:%S')}",
-        flush=True
-    )
+        print(
+            f"💓 BOT ALIVE | {now.strftime('%Y-%m-%d %H:%M:%S')}",
+            flush=True
+        )
 
     # Планируем отправку один раз в день
     if scheduled_date != today:
