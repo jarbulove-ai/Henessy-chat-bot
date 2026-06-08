@@ -52,7 +52,7 @@ def send_whatsapp_message():
 if __name__ == "__main__":
     print("Бот успешно запущен в облаке и вошел в бесконечный цикл ожидания...")
     
-    while True:
+ """    while True:
         # Получаем текущее время сервера
         current_time = time.gmtime() 
         
@@ -62,4 +62,8 @@ if __name__ == "__main__":
             time.sleep(65)
         
         # Проверяем время каждые 30 секунд
-        time.sleep(30)
+        time.sleep(30)"""
+if __name__ == "__main__":
+    print("Тестовый запуск бота...")
+    send_whatsapp_message()
+
