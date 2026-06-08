@@ -2,10 +2,11 @@ import os
 import time
 import requests
 
-# 1. Настройки авторизации Green API из переменных окружения
-ID_INSTANCE = os.getenv("GREEN_API_ID")
-API_TOKEN_INSTANCE = os.getenv("GREEN_API_TOKEN")
-CHAT_ID = os.getenv("GROUP_CHAT_ID")
+# --- ВСТАВЛЯЕМ ВАШИ ДАННЫЕ НАПРЯМУЮ В КАВЫЧКАХ ---
+ID_INSTANCE = "7107646143"
+API_TOKEN_INSTANCE = "7b6363cae6d644afafaddef92bdb3f0512915c22d5cf425dba"
+CHAT_ID = "77023958782-1590737066@g.us"
+# ------------------------------------------------
 
 # Время отправки (4:00 UTC — это 09:00 утра по времени Алматы)
 SEND_HOUR = 4
@@ -23,7 +24,8 @@ def get_fact_of_the_day():
 
 def send_whatsapp_message():
     """Отправка сообщения в группу через Green API"""
-    url = f"https://green-api.com{ID_INSTANCE}/sendMessage/{API_TOKEN_INSTANCE}"
+    # Здесь в начале ссылки мы сразу указали ваш сервер 7107
+    url = f"https://greenapi.com{ID_INSTANCE}/sendMessage/{API_TOKEN_INSTANCE}"
     
     fact = get_fact_of_the_day()
     message_text = (
