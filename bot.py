@@ -18,7 +18,7 @@ ALMATY_TZ = timezone(timedelta(hours=5))
 # ====== СОСТОЯНИЕ ======
 last_sent_date = None
 scheduled_date = None
-target_time = None
+scheduled_datetime = None
 
 
 # ====== ФАКТ ДНЯ ======
@@ -32,7 +32,6 @@ def get_fact_of_the_day():
         "У жирафов такое же количество шейных позвонков, как у человека.",
         "Мёд может храниться десятилетиями и не портиться."
     ]
-
     return random.choice(facts)
 
 
@@ -42,7 +41,7 @@ def get_weather():
         url = "https://api.open-meteo.com/v1/forecast"
 
         params = {
-            "latitude": 43.2389,  # Алматы
+            "latitude": 43.2389,
             "longitude": 76.8897,
             "current_weather": True
         }
@@ -75,7 +74,8 @@ def build_message():
 
     return (
         f"{header}\n\n"
-        f"🤖 *Факт дня:*\n_{fact}_\n\n"
+        f"🤖 *Факт дня:*\n"
+        f"_{fact}_\n\n"
         f"{weather}\n\n"
         f"Хорошего дня ☕"
     )
@@ -110,7 +110,7 @@ def send_whatsapp_message():
         print(f"❌ Ошибка сети: {e}", flush=True)
 
 
-# ====== СЛУЧАЙНОЕ ВРЕМЯ НА ДЕНЬ ======
+# ====== СЛУЧАЙНОЕ ВРЕМЯ ======
 def generate_daily_time():
     hour = random.choice([8, 9, 9, 10])
     minute = random.randint(0, 59)
@@ -123,32 +123,54 @@ while True:
     now = datetime.now(ALMATY_TZ)
     today = now.date()
 
-    print(f"💓 BOT LOOP TICK | {now.strftime('%Y-%m-%d %H:%M:%S')}", flush=True)
+    print(
+        f"💓 BOT LOOP TICK | {now.strftime('%Y-%m-%d %H:%M:%S')}",
+        flush=True
+    )
 
-    # Генерируем время только один раз в день
+    # Планируем отправку один раз в день
     if scheduled_date != today:
-        target_time = generate_daily_time()
+        hour, minute = generate_daily_time()
+
+        candidate = datetime(
+            now.year,
+            now.month,
+            now.day,
+            hour,
+            minute,
+            tzinfo=ALMATY_TZ
+        )
+
+        # Если время уже прошло — переносим на завтра
+        if candidate <= now:
+            candidate += timedelta(days=1)
+
+        scheduled_datetime = candidate
         scheduled_date = today
 
         print(
-            f"⏰ Сегодня отправка в: "
-            f"{target_time[0]:02d}:{target_time[1]:02d}",
+            f"⏰ Следующая отправка: "
+            f"{scheduled_datetime.strftime('%Y-%m-%d %H:%M')}",
             flush=True
         )
 
-    # Проверяем время отправки
+    # Проверяем пора ли отправлять
     if (
-        target_time
-        and now.hour == target_time[0]
-        and now.minute == target_time[1]
-        and last_sent_date != today
+        scheduled_datetime is not None
+        and now >= scheduled_datetime
+        and last_sent_date != now.date()
     ):
         send_whatsapp_message()
-        last_sent_date = today
 
-        print("✅ Сообщение отправлено. Жду завтра.", flush=True)
+        last_sent_date = now.date()
 
-        # чтобы не отправить дважды за одну минуту
+        print(
+            f"✅ Сообщение отправлено в "
+            f"{now.strftime('%H:%M:%S')}",
+            flush=True
+        )
+
+        # Защита от двойной отправки
         time.sleep(65)
 
     time.sleep(20)
