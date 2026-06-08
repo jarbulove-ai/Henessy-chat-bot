@@ -22,7 +22,7 @@ def get_fact_of_the_day():
     return random.choice(local_facts)
 
 def send_whatsapp_message():
-    # ВОТ ЭТА СТРОКА: sendMessage теперь написан правильно, с большой буквы M
+    # Ссылка прописана жестко текстом. Никаких переменных окружения из Render не нужно!
     url = "https://green-api.com"
     
     fact = get_fact_of_the_day()
