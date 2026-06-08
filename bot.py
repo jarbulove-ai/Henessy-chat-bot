@@ -5,9 +5,9 @@ import random
 from datetime import datetime, timedelta, timezone
 
 # ====== ENV ======
-GREEN_API_ID = os.getenv("GREEN_API_ID")
-GREEN_API_TOKEN = os.getenv("GREEN_API_TOKEN")
-CHAT_ID = os.getenv("GROUP_CHAT_ID")
+GREEN_API_ID = os.getenv("7107646143")
+GREEN_API_TOKEN = os.getenv("7b6363cae6d644afafaddef92bdb3f0512915c22d5cf425dba")
+CHAT_ID = os.getenv("77023958782-1590737066@g.us")
 
 BASE_URL = f"https://api.green-api.com/waInstance{GREEN_API_ID}/sendMessage/{GREEN_API_TOKEN}"
 
@@ -19,7 +19,7 @@ last_sent_date = None
 target_time = None
 
 
-# ====== ФАКТЫ ======
+# ====== ФАКТ ======
 def get_fact_of_the_day():
     return random.choice([
         "Осьминог имеет три сердца.",
@@ -51,7 +51,7 @@ def get_weather():
         return "🌤 Погода недоступна"
 
 
-# ====== СТИЛИ СООБЩЕНИЯ ======
+# ====== СООБЩЕНИЕ ======
 def build_message():
     fact = get_fact_of_the_day()
     weather = get_weather()
@@ -85,7 +85,7 @@ def send_whatsapp_message():
         response = requests.post(BASE_URL, json=payload, timeout=15)
 
         if response.status_code == 200:
-            print("✅ Отправлено!")
+            print("✅ Сообщение отправлено!")
         else:
             print("❌ Ошибка:", response.text)
 
@@ -95,35 +95,34 @@ def send_whatsapp_message():
 
 # ====== СЛУЧАЙНОЕ ВРЕМЯ ======
 def generate_daily_time():
-    # между 08:00 и 10:00
     hour = random.choice([8, 9, 9, 10])
     minute = random.randint(0, 59)
     return hour, minute
 
 
+# ====== СТАРТ ======
+print("🚀 BOT STARTED")
+
 # ====== ЦИКЛ ======
-if __name__ == "__main__":
-    print("🚀 Bot Level 2 (Almaty TZ) запущен")
+while True:
+    now = datetime.now(ALMATY_TZ)
+    today = now.date()
 
-    while True:
-        now = datetime.now(ALMATY_TZ)
-        today = now.date()
-        
-        print(f"💓 Бот жив: {datetime.now()}")
+    print("💓 BOT LOOP TICK")
 
-        # новое время каждый день
-        if last_sent_date != today:
-            target_time = generate_daily_time()
-            print(f"⏰ Сегодня отправка в: {target_time[0]:02d}:{target_time[1]:02d}")
+    # создаём новое время 1 раз в день
+    if last_sent_date != today:
+        target_time = generate_daily_time()
+        print(f"⏰ Сегодня отправка в: {target_time[0]:02d}:{target_time[1]:02d}")
 
-        # проверка времени
-        if target_time:
-            if now.hour == target_time[0] and now.minute == target_time[1]:
-                if last_sent_date != today:
-                    send_whatsapp_message()
-                    last_sent_date = today
+    # проверка времени отправки
+    if target_time:
+        if now.hour == target_time[0] and now.minute == target_time[1]:
+            if last_sent_date != today:
+                send_whatsapp_message()
+                last_sent_date = today
 
-                    print("✅ Сообщение отправлено, жду завтра...")
-                    time.sleep(65)
+                print("✅ Отправлено, жду следующий день...")
+                time.sleep(65)
 
-        time.sleep(20)
+    time.sleep(20)
