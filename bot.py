@@ -123,8 +123,9 @@ while True:
     now = datetime.now(ALMATY_TZ)
     today = now.date()
 
+    if now.minute in (0, 30) and now.second < 20:
     print(
-        f"💓 BOT LOOP TICK | {now.strftime('%Y-%m-%d %H:%M:%S')}",
+        f"💓 BOT ALIVE | {now.strftime('%Y-%m-%d %H:%M:%S')}",
         flush=True
     )
 
