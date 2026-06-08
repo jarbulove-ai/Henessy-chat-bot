@@ -109,8 +109,6 @@ if __name__ == "__main__":
         now = datetime.now(ALMATY_TZ)
         today = now.date()
 
-        global target_time
-
         # новое время каждый день
         if last_sent_date != today:
             target_time = generate_daily_time()
