@@ -3,11 +3,8 @@ import time
 import requests
 import random
 
-# --- ПОЛНОСТЬЮ ВЕРНЫЕ ДАННЫЕ ИЗ ВАШЕГО ЛИЧНОГО КАБИНЕТА ---
-ID_INSTANCE = "7107646143"
-API_TOKEN_INSTANCE = "7b6363cae6d644afafaddef92bdb3f0512915c22d5cf425dba"
+# Данные вашей группы
 CHAT_ID = "77023958782-1590737066@g.us"
-# -----------------------------------------------------
 
 def get_fact_of_the_day():
     try:
@@ -25,8 +22,8 @@ def get_fact_of_the_day():
     return random.choice(local_facts)
 
 def send_whatsapp_message():
-    # Прямая и чистая ссылка без лишних символов и склеек
-    url = f"https://green-api.com{ID_INSTANCE}/sendMessage/{API_TOKEN_INSTANCE}"
+    # МЫ УБРАЛИ ВСЕ ПЕРЕМЕННЫЕ ИЗ ССЫЛКИ. ТЕПЕРЬ ОНА ЖЕСТКАЯ И ПРЯМАЯ:
+    url = "https://green-api.com"
     
     fact = get_fact_of_the_day()
     message_text = (
@@ -43,14 +40,14 @@ def send_whatsapp_message():
     headers = {'Content-Type': 'application/json'}
     
     try:
-        print("Отправка запроса в Green API...")
+        print("Отправка прямого текстового запроса...")
         response = requests.post(url, json=payload, headers=headers, timeout=15)
         if response.status_code == 200:
             print(f"Успешно отправлено! Ответ сервера: {response.json()}")
         else:
             print(f"Ошибка сервера Green API: Код {response.status_code}, Текст: {response.text}")
     except Exception as e:
-        print(f"Критическая ошибка сети: {e}")
+        print(f"Критическая ошибка сети хостинга: {e}")
 
 if __name__ == "__main__":
     print("Тестовый запуск бота...")
