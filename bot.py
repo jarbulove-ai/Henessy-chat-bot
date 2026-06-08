@@ -1,10 +1,11 @@
-import os
 import time
 import requests
 import random
 from datetime import datetime, timedelta, timezone
 
-# ====== ENV ======
+print("=== ФАЙЛ ЗАПУЩЕН ===", flush=True)
+
+# ====== НАСТРОЙКИ ======
 GREEN_API_ID = "7107646143"
 GREEN_API_TOKEN = "7b6363cae6d644afafaddef92bdb3f0512915c22d5cf425dba"
 CHAT_ID = "77023958782-1590737066@g.us"
@@ -14,61 +15,69 @@ BASE_URL = f"https://api.green-api.com/waInstance{GREEN_API_ID}/sendMessage/{GRE
 # ====== ЧАСОВОЙ ПОЯС АЛМАТЫ ======
 ALMATY_TZ = timezone(timedelta(hours=5))
 
-# ====== НАСТРОЙКИ ======
+# ====== СОСТОЯНИЕ ======
 last_sent_date = None
+scheduled_date = None
 target_time = None
 
 
-# ====== ФАКТ ======
+# ====== ФАКТ ДНЯ ======
 def get_fact_of_the_day():
-    return random.choice([
+    facts = [
         "Осьминог имеет три сердца.",
         "Кошки не чувствуют сладкий вкус.",
         "В космосе нет звука.",
         "Мозг использует около 20% энергии тела.",
-        "Сердце человека бьётся ~100 000 раз в день."
-    ])
+        "Сердце человека бьётся около 100 000 раз в день.",
+        "У жирафов такое же количество шейных позвонков, как у человека.",
+        "Мёд может храниться десятилетиями и не портиться."
+    ]
+
+    return random.choice(facts)
 
 
 # ====== ПОГОДА ======
 def get_weather():
     try:
         url = "https://api.open-meteo.com/v1/forecast"
+
         params = {
-            "latitude": 43.2389,
+            "latitude": 43.2389,  # Алматы
             "longitude": 76.8897,
             "current_weather": True
         }
 
-        r = requests.get(url, params=params, timeout=10)
-        data = r.json()
+        response = requests.get(url, params=params, timeout=10)
+        data = response.json()
 
         temp = data["current_weather"]["temperature"]
         wind = data["current_weather"]["windspeed"]
 
         return f"🌤 Алматы: {temp}°C, ветер {wind} м/с"
-    except:
-        return "🌤 Погода недоступна"
+
+    except Exception as e:
+        print(f"Ошибка получения погоды: {e}", flush=True)
+        return "🌤 Погода временно недоступна"
 
 
-# ====== СООБЩЕНИЕ ======
+# ====== ТЕКСТ СООБЩЕНИЯ ======
 def build_message():
     fact = get_fact_of_the_day()
     weather = get_weather()
 
-    styles = [
+    greetings = [
         "☀️ *Доброе утро, банда!*",
         "😄 *Просыпаемся, легенды!*",
         "🌿 *Спокойное утро начинается...*"
     ]
 
-    header = random.choice(styles)
+    header = random.choice(greetings)
 
     return (
         f"{header}\n\n"
         f"🤖 *Факт дня:*\n_{fact}_\n\n"
         f"{weather}\n\n"
-        "Хорошего дня ☕"
+        f"Хорошего дня ☕"
     )
 
 
@@ -80,49 +89,66 @@ def send_whatsapp_message():
     }
 
     try:
-        print("📤 Отправка сообщения...")
+        print("📤 Отправка сообщения...", flush=True)
 
-        response = requests.post(BASE_URL, json=payload, timeout=15)
+        response = requests.post(
+            BASE_URL,
+            json=payload,
+            timeout=15
+        )
 
         if response.status_code == 200:
-            print("✅ Сообщение отправлено!")
+            print("✅ Сообщение отправлено!", flush=True)
+            print(response.json(), flush=True)
         else:
-            print("❌ Ошибка:", response.text)
+            print(
+                f"❌ Ошибка {response.status_code}: {response.text}",
+                flush=True
+            )
 
     except Exception as e:
-        print("❌ Ошибка сети:", e)
+        print(f"❌ Ошибка сети: {e}", flush=True)
 
 
-# ====== СЛУЧАЙНОЕ ВРЕМЯ ======
+# ====== СЛУЧАЙНОЕ ВРЕМЯ НА ДЕНЬ ======
 def generate_daily_time():
     hour = random.choice([8, 9, 9, 10])
     minute = random.randint(0, 59)
     return hour, minute
 
 
-# ====== СТАРТ ======
-print("🚀 BOT STARTED")
+print("🚀 BOT STARTED", flush=True)
 
-# ====== ЦИКЛ ======
 while True:
     now = datetime.now(ALMATY_TZ)
     today = now.date()
 
-    print("💓 BOT LOOP TICK")
+    print(f"💓 BOT LOOP TICK | {now.strftime('%Y-%m-%d %H:%M:%S')}", flush=True)
 
-    # создаём новое время 1 раз в день
-    if last_sent_date != today:
+    # Генерируем время только один раз в день
+    if scheduled_date != today:
         target_time = generate_daily_time()
-        print(f"⏰ Сегодня отправка в: {target_time[0]:02d}:{target_time[1]:02d}")
+        scheduled_date = today
 
-    # проверка времени отправки
-    if target_time:
-        if now.hour == target_time[0] and now.minute == target_time[1]:
-            if last_sent_date != today:
-                send_whatsapp_message()
-                last_sent_date = today
+        print(
+            f"⏰ Сегодня отправка в: "
+            f"{target_time[0]:02d}:{target_time[1]:02d}",
+            flush=True
+        )
 
-                print("✅ Отправлено, жду следующий день...")
-                time.sleep(65)
+    # Проверяем время отправки
+    if (
+        target_time
+        and now.hour == target_time[0]
+        and now.minute == target_time[1]
+        and last_sent_date != today
+    ):
+        send_whatsapp_message()
+        last_sent_date = today
+
+        print("✅ Сообщение отправлено. Жду завтра.", flush=True)
+
+        # чтобы не отправить дважды за одну минуту
+        time.sleep(65)
 
     time.sleep(20)
