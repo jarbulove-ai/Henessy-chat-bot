@@ -1,3 +1,5 @@
+import json
+import base64
 import os
 import time
 import requests
@@ -10,8 +12,90 @@ print("=== ФАЙЛ ЗАПУЩЕН ===", flush=True)
 GREEN_API_ID = os.getenv("GREEN_API_ID")
 GREEN_API_TOKEN = os.getenv("GREEN_API_TOKEN")
 CHAT_ID = os.getenv("GROUP_CHAT_ID")
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+
+GITHUB_OWNER = "jarbulove-ai"
+GITHUB_REPO = "Henessy-chat-bot"
 
 BASE_URL = f"https://api.green-api.com/waInstance{GREEN_API_ID}/sendMessage/{GREEN_API_TOKEN}"
+
+# ====== функции GitHub ======
+def load_state():
+    try:
+        url = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/contents/state.json"
+
+        headers = {
+            "Authorization": f"token {GITHUB_TOKEN}"
+        }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code != 200:
+            print("⚠️ Не удалось загрузить state.json")
+            return {
+                "used_facts": [],
+                "used_useless_facts": [],
+                "used_jokes": [],
+                "used_questions": []
+            }, None
+
+        data = response.json()
+
+        content = base64.b64decode(
+            data["content"]
+        ).decode("utf-8")
+
+        return json.loads(content), data["sha"]
+
+    except Exception as e:
+        print(f"Ошибка загрузки state.json: {e}")
+
+        return {
+            "used_facts": [],
+            "used_useless_facts": [],
+            "used_jokes": [],
+            "used_questions": []
+        }, None
+
+
+def save_state(state, sha):
+    try:
+        if sha is None:
+            return
+
+        url = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/contents/state.json"
+
+        headers = {
+            "Authorization": f"token {GITHUB_TOKEN}"
+        }
+
+        content = base64.b64encode(
+            json.dumps(
+                state,
+                ensure_ascii=False,
+                indent=2
+            ).encode("utf-8")
+        ).decode()
+
+        payload = {
+            "message": "Update bot memory",
+            "content": content,
+            "sha": sha
+        }
+
+        response = requests.put(
+            url,
+            headers=headers,
+            json=payload
+        )
+
+        print(
+            f"💾 State saved: {response.status_code}",
+            flush=True
+        )
+
+    except Exception as e:
+        print(f"Ошибка сохранения state.json: {e}")
 
 # ====== ЧАСОВОЙ ПОЯС АЛМАТЫ ======
 ALMATY_TZ = timezone(timedelta(hours=5))
@@ -36,21 +120,17 @@ def load_items(filename):
         return []
 
 
-def get_unique_item(source_file, used_file):
+def get_unique_item(source_file, state_key):
     items = load_items(source_file)
 
     if not items:
-        return "Факты временно недоступны."
+        return "Данные временно недоступны."
 
-    try:
-        with open(used_file, "r", encoding="utf-8") as f:
-            used = set(
-                line.strip()
-                for line in f
-                if line.strip()
-            )
-    except FileNotFoundError:
-        used = set()
+    state, sha = load_state()
+
+    used = set(
+        state.get(state_key, [])
+    )
 
     available = [
         item
@@ -60,19 +140,21 @@ def get_unique_item(source_file, used_file):
 
     if not available:
         print(
-            f"♻️ Все записи из {source_file} использованы. Начинаем новый круг.",
+            f"♻️ Все записи из {source_file} использованы. Новый круг.",
             flush=True
         )
 
-        with open(used_file, "w", encoding="utf-8"):
-            pass
+        state[state_key] = []
+
+        save_state(state, sha)
 
         available = items
 
     selected = random.choice(available)
 
-    with open(used_file, "a", encoding="utf-8") as f:
-        f.write(selected + "\n")
+    state[state_key].append(selected)
+
+    save_state(state, sha)
 
     return selected
 
@@ -80,28 +162,28 @@ def get_unique_item(source_file, used_file):
 def get_fact_of_the_day():
     return get_unique_item(
         "facts.txt",
-        "used_facts.txt"
+        "used_facts"
     )
 
 
 def get_useless_fact():
     return get_unique_item(
         "useless_facts.txt",
-        "used_useless_facts.txt"
+        "used_useless_facts"
     )
 
 
 def get_joke_of_the_day():
     return get_unique_item(
         "jokes.txt",
-        "used_jokes.txt"
+        "used_jokes"
     )
 
 
 def get_question_of_the_day():
     return get_unique_item(
         "questions.txt",
-        "used_questions.txt"
+        "used_questions"
     )
 
 
