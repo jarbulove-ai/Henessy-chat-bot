@@ -316,7 +316,7 @@ def generate_daily_time():
 
 print("🚀 BOT STARTED", flush=True)
 
-#send_whatsapp_message()
+send_whatsapp_message()
 
 while True:
     now = datetime.now(ALMATY_TZ)
