@@ -1,5 +1,7 @@
 {
-  "used_facts": [],
+  "used_facts": [
+    "Некоторые птицы способны спать во время полёта."
+  ],
   "used_useless_facts": [],
   "used_jokes": [],
   "used_questions": []
