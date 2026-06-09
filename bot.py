@@ -200,6 +200,38 @@ def get_friday_index():
         return f"🍺 До пятницы осталось {days_until_friday} дн."
 
 
+# ====== ПЕРЕВОД ======
+def translate_to_russian(text):
+    try:
+        url = "https://translate.googleapis.com/translate_a/single"
+
+        params = {
+            "client": "gtx",
+            "sl": "en",
+            "tl": "ru",
+            "dt": "t",
+            "q": text
+        }
+
+        response = requests.get(
+            url,
+            params=params,
+            timeout=10
+        )
+
+        data = response.json()
+
+        return data[0][0][0]
+
+    except Exception as e:
+        print(
+            f"Ошибка перевода: {e}",
+            flush=True
+        )
+
+        return text
+
+
 # ====== ИСТОРИЯ ======
 def get_today_in_history():
     try:
@@ -210,16 +242,22 @@ def get_today_in_history():
 
         data = response.json()
 
-        events = data["data"]["Events"]
+        events = [
+            e
+            for e in data["data"]["Events"]
+            if int(e["year"]) >= 1800
+        ]
 
         event = random.choice(events)
 
         year = event["year"]
         text = event["text"]
 
+        translated = translate_to_russian(text)
+
         return (
             f"📅 *В этот день ({year}):*\n"
-            f"{text}"
+            f"{translated}"
         )
 
     except Exception as e:
