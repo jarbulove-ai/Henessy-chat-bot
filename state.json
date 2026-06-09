@@ -2,7 +2,9 @@
   "used_facts": [
     "Некоторые птицы способны спать во время полёта."
   ],
-  "used_useless_facts": [],
+  "used_useless_facts": [
+    "Крысы любят играть друг с другом."
+  ],
   "used_jokes": [],
   "used_questions": []
 }
