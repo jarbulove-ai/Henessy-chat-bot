@@ -2,7 +2,6 @@ import os
 import time
 import requests
 import random
-from openai import OpenAI
 from datetime import datetime, timedelta, timezone
 
 print("=== ФАЙЛ ЗАПУЩЕН ===", flush=True)
@@ -11,13 +10,8 @@ print("=== ФАЙЛ ЗАПУЩЕН ===", flush=True)
 GREEN_API_ID = os.getenv("GREEN_API_ID")
 GREEN_API_TOKEN = os.getenv("GREEN_API_TOKEN")
 CHAT_ID = os.getenv("GROUP_CHAT_ID")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 BASE_URL = f"https://api.green-api.com/waInstance{GREEN_API_ID}/sendMessage/{GREEN_API_TOKEN}"
-
-client = OpenAI(
-    api_key=OPENAI_API_KEY
-)
 
 # ====== ЧАСОВОЙ ПОЯС АЛМАТЫ ======
 ALMATY_TZ = timezone(timedelta(hours=5))
@@ -28,48 +22,73 @@ scheduled_date = None
 scheduled_datetime = None
 
 
-# ====== GPT КОНТЕНТ ======
-def get_gpt_content():
+# ====== ФАКТЫ ======
+def load_items(filename):
     try:
-        response = client.chat.completions.create(
-            model="gpt-4.1-mini",
-            messages=[
-                {
-                    "role": "user",
-                    "content": """
-Придумай:
-
-1. Один интересный факт дня.
-2. Одно бесполезное, но забавное знание дня.
-
-Ответ строго в формате:
-
-🧠 Интересный факт:
-...
-
-🤯 Бесполезное знание:
-...
-
-На русском языке.
-Не более двух предложений на каждый пункт.
-Без приветствий и лишнего текста.
-"""
-                }
-            ],
-            temperature=1
-        )
-
-        return response.choices[0].message.content
-
+        with open(filename, "r", encoding="utf-8") as f:
+            return [
+                line.strip()
+                for line in f
+                if line.strip()
+            ]
     except Exception as e:
-        print(f"Ошибка GPT: {e}", flush=True)
+        print(f"Ошибка чтения {filename}: {e}", flush=True)
+        return []
 
-        return (
-            "🧠 Интересный факт:\n"
-            "Осьминог имеет три сердца.\n\n"
-            "🤯 Бесполезное знание:\n"
-            "Вомбаты производят кубические какашки."
+
+def get_unique_item(source_file, used_file):
+    items = load_items(source_file)
+
+    if not items:
+        return "Факты временно недоступны."
+
+    try:
+        with open(used_file, "r", encoding="utf-8") as f:
+            used = set(
+                line.strip()
+                for line in f
+                if line.strip()
+            )
+    except FileNotFoundError:
+        used = set()
+
+    available = [
+        item
+        for item in items
+        if item not in used
+    ]
+
+    if not available:
+        print(
+            f"♻️ Все записи из {source_file} использованы. Начинаем новый круг.",
+            flush=True
         )
+
+        with open(used_file, "w", encoding="utf-8"):
+            pass
+
+        available = items
+
+    selected = random.choice(available)
+
+    with open(used_file, "a", encoding="utf-8") as f:
+        f.write(selected + "\n")
+
+    return selected
+
+
+def get_fact_of_the_day():
+    return get_unique_item(
+        "facts.txt",
+        "used_facts.txt"
+    )
+
+
+def get_useless_fact():
+    return get_unique_item(
+        "useless_facts.txt",
+        "used_useless_facts.txt"
+    )
 
 
 # ====== ПОГОДА ======
@@ -119,7 +138,8 @@ def get_weather():
 
 # ====== ТЕКСТ СООБЩЕНИЯ ======
 def build_message():
-    gpt_content = get_gpt_content()
+    fact = get_fact_of_the_day()
+    useless_fact = get_useless_fact()
     weather = get_weather()
 
     greetings = [
@@ -132,7 +152,10 @@ def build_message():
 
     return (
         f"{header}\n\n"
-        f"{gpt_content}\n\n"
+        f"🧠 *Интересный факт дня:*\n"
+        f"{fact}\n\n"
+        f"🤯 *Бесполезное знание дня:*\n"
+        f"{useless_fact}\n\n"
         f"{weather}\n\n"
         f"Хорошего дня ☕"
     )
@@ -175,9 +198,6 @@ def generate_daily_time():
 
 
 print("🚀 BOT STARTED", flush=True)
-
-# ТЕСТ GPT ПРИ СТАРТЕ
-print(get_gpt_content(), flush=True)
 
 while True:
     now = datetime.now(ALMATY_TZ)
