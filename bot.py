@@ -91,6 +91,33 @@ def get_useless_fact():
     )
 
 
+def get_joke_of_the_day():
+    return get_unique_item(
+        "jokes.txt",
+        "used_jokes.txt"
+    )
+
+
+def get_question_of_the_day():
+    return get_unique_item(
+        "questions.txt",
+        "used_questions.txt"
+    )
+
+
+def get_friday_index():
+    today = datetime.now(ALMATY_TZ)
+
+    days_until_friday = (4 - today.weekday()) % 7
+
+    if days_until_friday == 0:
+        return "🍺 Индекс пятницы: СЕГОДНЯ ПЯТНИЦА!"
+    elif days_until_friday == 1:
+        return "🍺 До пятницы остался 1 день."
+    else:
+        return f"🍺 До пятницы осталось {days_until_friday} дн."
+
+
 # ====== ПОГОДА ======
 def get_weather():
     try:
@@ -141,7 +168,10 @@ def build_message():
     fact = get_fact_of_the_day()
     useless_fact = get_useless_fact()
     weather = get_weather()
-
+    joke = get_joke_of_the_day()
+    question = get_question_of_the_day()
+    friday_index = get_friday_index()
+    
     greetings = [
         "☀️ *Доброе утро, банда!*",
         "😄 *Просыпаемся, легенды!*",
@@ -156,7 +186,12 @@ def build_message():
         f"{fact}\n\n"
         f"🤯 *Бесполезное знание дня:*\n"
         f"{useless_fact}\n\n"
+        f"😂 *Шутка дня:*\n"
+        f"{joke}\n\n"
+        f"🤔 *Вопрос дня:*\n"
+        f"{question}\n\n"
         f"{weather}\n\n"
+        f"{friday_index}\n\n"
         f"Хорошего дня ☕"
     )
 
