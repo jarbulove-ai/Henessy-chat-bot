@@ -1,16 +1,23 @@
+import os
 import time
 import requests
 import random
+from openai import OpenAI
 from datetime import datetime, timedelta, timezone
 
 print("=== ФАЙЛ ЗАПУЩЕН ===", flush=True)
 
-# ====== НАСТРОЙКИ ======
-GREEN_API_ID = "7107646143"
-GREEN_API_TOKEN = "7b6363cae6d644afafaddef92bdb3f0512915c22d5cf425dba"
-CHAT_ID = "77023958782-1590737066@g.us"
+# ====== ENV ======
+GREEN_API_ID = os.getenv("GREEN_API_ID")
+GREEN_API_TOKEN = os.getenv("GREEN_API_TOKEN")
+CHAT_ID = os.getenv("GROUP_CHAT_ID")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 BASE_URL = f"https://api.green-api.com/waInstance{GREEN_API_ID}/sendMessage/{GREEN_API_TOKEN}"
+
+client = OpenAI(
+    api_key=OPENAI_API_KEY
+)
 
 # ====== ЧАСОВОЙ ПОЯС АЛМАТЫ ======
 ALMATY_TZ = timezone(timedelta(hours=5))
@@ -21,18 +28,48 @@ scheduled_date = None
 scheduled_datetime = None
 
 
-# ====== ФАКТ ДНЯ ======
-def get_fact_of_the_day():
-    facts = [
-        "Осьминог имеет три сердца.",
-        "Кошки не чувствуют сладкий вкус.",
-        "В космосе нет звука.",
-        "Мозг использует около 20% энергии тела.",
-        "Сердце человека бьётся около 100 000 раз в день.",
-        "У жирафов такое же количество шейных позвонков, как у человека.",
-        "Мёд может храниться десятилетиями и не портиться."
-    ]
-    return random.choice(facts)
+# ====== GPT КОНТЕНТ ======
+def get_gpt_content():
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4.1-mini",
+            messages=[
+                {
+                    "role": "user",
+                    "content": """
+Придумай:
+
+1. Один интересный факт дня.
+2. Одно бесполезное, но забавное знание дня.
+
+Ответ строго в формате:
+
+🧠 Интересный факт:
+...
+
+🤯 Бесполезное знание:
+...
+
+На русском языке.
+Не более двух предложений на каждый пункт.
+Без приветствий и лишнего текста.
+"""
+                }
+            ],
+            temperature=1
+        )
+
+        return response.choices[0].message.content
+
+    except Exception as e:
+        print(f"Ошибка GPT: {e}", flush=True)
+
+        return (
+            "🧠 Интересный факт:\n"
+            "Осьминог имеет три сердца.\n\n"
+            "🤯 Бесполезное знание:\n"
+            "Вомбаты производят кубические какашки."
+        )
 
 
 # ====== ПОГОДА ======
@@ -82,7 +119,7 @@ def get_weather():
 
 # ====== ТЕКСТ СООБЩЕНИЯ ======
 def build_message():
-    fact = get_fact_of_the_day()
+    gpt_content = get_gpt_content()
     weather = get_weather()
 
     greetings = [
@@ -95,8 +132,7 @@ def build_message():
 
     return (
         f"{header}\n\n"
-        f"🤖 *Факт дня:*\n"
-        f"_{fact}_\n\n"
+        f"{gpt_content}\n\n"
         f"{weather}\n\n"
         f"Хорошего дня ☕"
     )
@@ -140,6 +176,9 @@ def generate_daily_time():
 
 print("🚀 BOT STARTED", flush=True)
 
+# ТЕСТ GPT ПРИ СТАРТЕ
+print(get_gpt_content(), flush=True)
+
 while True:
     now = datetime.now(ALMATY_TZ)
     today = now.date()
@@ -163,7 +202,6 @@ while True:
             tzinfo=ALMATY_TZ
         )
 
-        # Если время уже прошло — переносим на завтра
         if candidate <= now:
             candidate += timedelta(days=1)
 
@@ -194,7 +232,6 @@ while True:
             flush=True
         )
 
-        # Защита от двойной отправки
         time.sleep(65)
 
     time.sleep(20)
