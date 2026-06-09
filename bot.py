@@ -43,16 +43,37 @@ def get_weather():
         params = {
             "latitude": 43.2389,
             "longitude": 76.8897,
-            "current_weather": True
+            "daily": [
+                "temperature_2m_max",
+                "temperature_2m_min",
+                "precipitation_probability_max",
+                "precipitation_sum"
+            ],
+            "current_weather": True,
+            "timezone": "Asia/Almaty"
         }
 
         response = requests.get(url, params=params, timeout=10)
         data = response.json()
 
-        temp = data["current_weather"]["temperature"]
+        current_temp = data["current_weather"]["temperature"]
         wind = data["current_weather"]["windspeed"]
 
-        return f"🌤 Алматы: {temp}°C, ветер {wind} м/с"
+        temp_max = data["daily"]["temperature_2m_max"][0]
+        temp_min = data["daily"]["temperature_2m_min"][0]
+
+        rain_probability = data["daily"]["precipitation_probability_max"][0]
+        rain_amount = data["daily"]["precipitation_sum"][0]
+
+        return (
+            f"🌤 Алматы\n"
+            f"Сейчас: {current_temp}°C\n"
+            f"📈 Днём до: {temp_max}°C\n"
+            f"📉 Ночью: {temp_min}°C\n"
+            f"🌧 Вероятность осадков: {rain_probability}%\n"
+            f"☔ Осадки: {rain_amount} мм\n"
+            f"💨 Ветер: {wind} м/с"
+        )
 
     except Exception as e:
         print(f"Ошибка получения погоды: {e}", flush=True)
