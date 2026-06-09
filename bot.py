@@ -164,6 +164,8 @@ while True:
         send_whatsapp_message()
 
         last_sent_date = now.date()
+        scheduled_date = None
+        scheduled_datetime = None
 
         print(
             f"✅ Сообщение отправлено в "
