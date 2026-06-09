@@ -200,6 +200,37 @@ def get_friday_index():
         return f"🍺 До пятницы осталось {days_until_friday} дн."
 
 
+# ====== ИСТОРИЯ ======
+def get_today_in_history():
+    try:
+        response = requests.get(
+            "https://history.muffinlabs.com/date",
+            timeout=10
+        )
+
+        data = response.json()
+
+        events = data["data"]["Events"]
+
+        event = random.choice(events)
+
+        year = event["year"]
+        text = event["text"]
+
+        return (
+            f"📅 *В этот день ({year}):*\n"
+            f"{text}"
+        )
+
+    except Exception as e:
+        print(
+            f"Ошибка истории дня: {e}",
+            flush=True
+        )
+
+        return "📅 Исторический факт временно недоступен"
+
+
 # ====== ПОГОДА ======
 def get_weather():
     try:
@@ -253,6 +284,7 @@ def build_message():
     joke = get_joke_of_the_day()
     question = get_question_of_the_day()
     friday_index = get_friday_index()
+    history_today = get_today_in_history()
     
     greetings = [
         "☀️ *Доброе утро, банда!*",
@@ -272,6 +304,7 @@ def build_message():
         f"{joke}\n\n"
         f"🤔 *Вопрос дня:*\n"
         f"{question}\n\n"
+        f"{history_today}\n\n"
         f"{weather}\n\n"
         f"{friday_index}\n\n"
         f"Хорошего дня ☕"
@@ -316,7 +349,7 @@ def generate_daily_time():
 
 print("🚀 BOT STARTED", flush=True)
 
-send_whatsapp_message()
+#send_whatsapp_message()
 
 while True:
     now = datetime.now(ALMATY_TZ)
