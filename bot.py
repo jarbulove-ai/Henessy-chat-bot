@@ -397,7 +397,6 @@ if last_sent_date:
 
 #send_whatsapp_message()
 
-    # Планируем отправку в 08:00
 while True:
     now = datetime.now(ALMATY_TZ)
     today = now.date()
@@ -408,7 +407,6 @@ while True:
             flush=True
         )
 
-    # Планируем отправку в 08:00
     if scheduled_date != today:
 
         candidate = datetime(
@@ -432,29 +430,28 @@ while True:
             flush=True
         )
 
-    # Проверяем пора ли отправлять
-if (
-    scheduled_datetime is not None
-    and now >= scheduled_datetime
-    and last_sent_date != today
-):
-    send_whatsapp_message()
+    if (
+        scheduled_datetime is not None
+        and now >= scheduled_datetime
+        and last_sent_date != today
+    ):
+        send_whatsapp_message()
 
-    last_sent_date = today
+        last_sent_date = today
 
-    state, sha = load_state()
+        state, sha = load_state()
 
-    state["last_sent_date"] = today.strftime(
-        "%Y-%m-%d"
-    )
+        state["last_sent_date"] = today.strftime(
+            "%Y-%m-%d"
+        )
 
-    save_state(state, sha)
+        save_state(state, sha)
 
-    print(
-        f"✅ Сообщение отправлено в "
-        f"{now.strftime('%H:%M:%S')}",
-        flush=True
-    )
+        print(
+            f"✅ Сообщение отправлено в "
+            f"{now.strftime('%H:%M:%S')}",
+            flush=True
+        )
 
         time.sleep(65)
 
