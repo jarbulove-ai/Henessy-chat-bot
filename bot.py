@@ -396,40 +396,49 @@ while True:
         )
 
     # Планируем отправку в 08:00
-if scheduled_date != today:
+while True:
+    now = datetime.now(ALMATY_TZ)
+    today = now.date()
 
-    candidate = datetime(
-        now.year,
-        now.month,
-        now.day,
-        TARGET_HOUR,
-        TARGET_MINUTE,
-        tzinfo=ALMATY_TZ
-    )
+    if now.minute in (0, 30) and now.second < 20:
+        print(
+            f"💓 BOT ALIVE | {now.strftime('%Y-%m-%d %H:%M:%S')}",
+            flush=True
+        )
 
-    if candidate <= now:
-        candidate += timedelta(days=1)
+    # Планируем отправку в 08:00
+    if scheduled_date != today:
 
-    scheduled_datetime = candidate
-    scheduled_date = today
+        candidate = datetime(
+            now.year,
+            now.month,
+            now.day,
+            TARGET_HOUR,
+            TARGET_MINUTE,
+            tzinfo=ALMATY_TZ
+        )
 
-    print(
-        f"⏰ Следующая отправка: "
-        f"{scheduled_datetime.strftime('%Y-%m-%d %H:%M')}",
-        flush=True
-    )
-    
+        if candidate <= now:
+            candidate += timedelta(days=1)
+
+        scheduled_datetime = candidate
+        scheduled_date = today
+
+        print(
+            f"⏰ Следующая отправка: "
+            f"{scheduled_datetime.strftime('%Y-%m-%d %H:%M')}",
+            flush=True
+        )
+
     # Проверяем пора ли отправлять
     if (
         scheduled_datetime is not None
         and now >= scheduled_datetime
-        and last_sent_date != now.date()
+        and last_sent_date != today
     ):
         send_whatsapp_message()
 
-        last_sent_date = now.date()
-        scheduled_date = None
-        scheduled_datetime = None
+        last_sent_date = today
 
         print(
             f"✅ Сообщение отправлено в "
