@@ -36,7 +36,8 @@ def load_state():
                 "used_facts": [],
                 "used_useless_facts": [],
                 "used_jokes": [],
-                "used_questions": []
+                "used_questions": [],
+                "last_sent_date": None
             }, None
 
         data = response.json()
@@ -54,7 +55,8 @@ def load_state():
             "used_facts": [],
             "used_useless_facts": [],
             "used_jokes": [],
-            "used_questions": []
+            "used_questions": [],
+            "last_sent_date": None
         }, None
 
 
@@ -383,6 +385,16 @@ def send_whatsapp_message():
 
 print("🚀 BOT STARTED", flush=True)
 
+state, sha = load_state()
+
+last_sent_date = state.get("last_sent_date")
+
+if last_sent_date:
+    last_sent_date = datetime.strptime(
+        last_sent_date,
+        "%Y-%m-%d"
+    ).date()
+
 #send_whatsapp_message()
 
     # Планируем отправку в 08:00
@@ -421,20 +433,28 @@ while True:
         )
 
     # Проверяем пора ли отправлять
-    if (
-        scheduled_datetime is not None
-        and now >= scheduled_datetime
-        and last_sent_date != today
-    ):
-        send_whatsapp_message()
+if (
+    scheduled_datetime is not None
+    and now >= scheduled_datetime
+    and last_sent_date != today
+):
+    send_whatsapp_message()
 
-        last_sent_date = today
+    last_sent_date = today
 
-        print(
-            f"✅ Сообщение отправлено в "
-            f"{now.strftime('%H:%M:%S')}",
-            flush=True
-        )
+    state, sha = load_state()
+
+    state["last_sent_date"] = today.strftime(
+        "%Y-%m-%d"
+    )
+
+    save_state(state, sha)
+
+    print(
+        f"✅ Сообщение отправлено в "
+        f"{now.strftime('%H:%M:%S')}",
+        flush=True
+    )
 
         time.sleep(65)
 
