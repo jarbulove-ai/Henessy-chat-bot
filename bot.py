@@ -385,16 +385,6 @@ print("🚀 BOT STARTED", flush=True)
 
 #send_whatsapp_message()
 
-while True:
-    now = datetime.now(ALMATY_TZ)
-    today = now.date()
-
-    if now.minute in (0, 30) and now.second < 20:
-        print(
-            f"💓 BOT ALIVE | {now.strftime('%Y-%m-%d %H:%M:%S')}",
-            flush=True
-        )
-
     # Планируем отправку в 08:00
 while True:
     now = datetime.now(ALMATY_TZ)
