@@ -100,6 +100,9 @@ def save_state(state, sha):
 # ====== ЧАСОВОЙ ПОЯС АЛМАТЫ ======
 ALMATY_TZ = timezone(timedelta(hours=5))
 
+TARGET_HOUR = 8
+TARGET_MINUTE = 0
+
 # ====== СОСТОЯНИЕ ======
 last_sent_date = None
 scheduled_date = None
@@ -378,13 +381,6 @@ def send_whatsapp_message():
         print(f"❌ Ошибка сети: {e}", flush=True)
 
 
-# ====== СЛУЧАЙНОЕ ВРЕМЯ ======
-def generate_daily_time():
-    hour = random.choice([8, 9, 9, 10])
-    minute = random.randint(0, 59)
-    return hour, minute
-
-
 print("🚀 BOT STARTED", flush=True)
 
 #send_whatsapp_message()
@@ -399,31 +395,30 @@ while True:
             flush=True
         )
 
-    # Планируем отправку один раз в день
-    if scheduled_date != today:
-        hour, minute = generate_daily_time()
+    # Планируем отправку в 08:00
+if scheduled_date != today:
 
-        candidate = datetime(
-            now.year,
-            now.month,
-            now.day,
-            hour,
-            minute,
-            tzinfo=ALMATY_TZ
-        )
+    candidate = datetime(
+        now.year,
+        now.month,
+        now.day,
+        TARGET_HOUR,
+        TARGET_MINUTE,
+        tzinfo=ALMATY_TZ
+    )
 
-        if candidate <= now:
-            candidate += timedelta(days=1)
+    if candidate <= now:
+        candidate += timedelta(days=1)
 
-        scheduled_datetime = candidate
-        scheduled_date = today
+    scheduled_datetime = candidate
+    scheduled_date = today
 
-        print(
-            f"⏰ Следующая отправка: "
-            f"{scheduled_datetime.strftime('%Y-%m-%d %H:%M')}",
-            flush=True
-        )
-
+    print(
+        f"⏰ Следующая отправка: "
+        f"{scheduled_datetime.strftime('%Y-%m-%d %H:%M')}",
+        flush=True
+    )
+    
     # Проверяем пора ли отправлять
     if (
         scheduled_datetime is not None
