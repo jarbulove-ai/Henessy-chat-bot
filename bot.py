@@ -318,12 +318,54 @@ def get_weather():
         print(f"Ошибка получения погоды: {e}", flush=True)
         return "🌤 Погода временно недоступна"
 
+# ====== Совет по погоде ======
+def get_weather_advice(weather_text):
+    weather_lower = weather_text.lower()
+
+    try:
+        if "вероятность осадков:" in weather_lower:
+            rain = int(
+                weather_lower.split(
+                    "вероятность осадков:"
+                )[1].split("%")[0].strip()
+            )
+
+            if rain >= 70:
+                return "☔ Сегодня высокая вероятность дождя. Лучше взять зонт."
+
+            elif rain >= 40:
+                return "🌦 Возможны осадки. Зонт может пригодиться."
+
+        if "днём до:" in weather_lower:
+            temp = int(
+                weather_lower.split(
+                    "днём до:"
+                )[1].split("°")[0].strip()
+            )
+
+            if temp >= 35:
+                return "🥵 Очень жарко. Пейте больше воды."
+
+            elif temp >= 30:
+                return "🧴 Жаркий день. Не забудьте воду и головной убор."
+
+            elif temp <= 10:
+                return "🧥 Сегодня прохладно. Одевайтесь теплее."
+
+    except Exception as e:
+        print(
+            f"Ошибка совета по погоде: {e}",
+            flush=True
+        )
+
+    return "👍 Погода комфортная, хорошего дня!"
 
 # ====== ТЕКСТ СООБЩЕНИЯ ======
 def build_message():
     fact = get_fact_of_the_day()
     useless_fact = get_useless_fact()
     weather = get_weather()
+    weather_advice = get_weather_advice(weather)
     joke = get_joke_of_the_day()
     question = get_question_of_the_day()
     friday_index = get_friday_index()
@@ -349,6 +391,8 @@ def build_message():
         f"{question}\n\n"
         f"{history_today}\n\n"
         f"{weather}\n\n"
+        f"🧥 *Совет по погоде:*\n"
+        f"{weather_advice}\n\n"
         f"{friday_index}\n\n"
         f"Хорошего дня ☕"
     )
